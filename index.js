@@ -3,26 +3,37 @@ const Gridfs = require('mongoose-gridfs');
 const fs = require('fs');
 const path = require('path');
 
-mongoose.connect('mongodb://localhost:27017/mongoose-gridfs-issues-13', { useMongoClient: true});
+mongoose.Promise = Promise;
 
-const gridfs = Gridfs({
-  collection: 'files',
-  model: 'File',
-  mongooseConnection: mongoose.connection,
-});
+mongoose.connect(
+  'mongodb://localhost:27017/mongoose-gridfs-issues-13',
+  { useMongoClient: true, promiseLibrary: Promise, readPreference: 'primary'},
+  function( err, db) {
 
-const File = gridfs.model;
+    const gridfs = Gridfs({
+      collection: 'files',
+      model: 'File',
+      mongooseConnection: mongoose.connection,
+    });
 
-const fileLocalPath = path.join(__dirname, 'myfile.pdf');
+    const File = gridfs.model;
 
-File.write({
-    filename: 'myfile.pdf',
-    contentType: 'application/pdf',
-  },
-  fs.createReadStream(fileLocalPath),
-  function(err, file) {
-    if (err) {
-      verbose(err.message);
-      verbose(err.stack);
-    }
-});
+    const fileLocalPath = path.join(__dirname, 'myfile.pdf');
+
+    File.write({
+        filename: 'myfile.pdf',
+        contentType: 'application/pdf',
+      },
+      fs.createReadStream(fileLocalPath),
+      function(err, file) {
+        if (err) {
+          console.log(err.message);
+          console.log(err.stack);
+        } else {
+          console.log(file);
+        }
+
+        process.exit();
+    });
+  }
+);
